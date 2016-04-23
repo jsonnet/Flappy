@@ -13,10 +13,12 @@ import javax.swing.JPanel;
 
 public class GameLoop extends JPanel {
 
+	// private static final long serialVersionUID = 1L;
+
 	/* RENDER */
 	private boolean running = false;
 	private boolean paused = false;
-	private int fps = Preferences.FPS;
+	private int actualFps = (int) Preferences.TARGET_FPS;
 	// Current FPS Count
 	private int frameCount = 0;
 	// Delta of gameLoop and fps difference
@@ -54,21 +56,10 @@ public class GameLoop extends JPanel {
 
 	// Only run this in another Thread!
 	private void gameLoop() {
-		// This value would probably be stored elsewhere
-		final double GAME_HERTZ = 30.0;
-		// Calculate how many ns each frame should take for our target game hertz
-		final double TIME_BETWEEN_UPDATES = 1000000000 / GAME_HERTZ;
-		// At the very most it will update the game this many times before a new render
-		// If you're worried about visual hitches more than perfect timing, set this to 1
-		final int MAX_UPDATES_BEFORE_RENDER = 5;
 		// We will need the last update time
 		double lastUpdateTime = System.nanoTime();
 		// Store the last time we rendered
 		double lastRenderTime = System.nanoTime();
-
-		// If we are able to get as high as this FPS, don't render again
-		final double TARGET_FPS = 60;
-		final double TARGET_TIME_BETWEEN_RENDERS = 1000000000 / TARGET_FPS;
 
 		// Simple way of finding FPS
 		int lastSecondTime = (int) (lastUpdateTime / 1000000000);
@@ -79,18 +70,17 @@ public class GameLoop extends JPanel {
 
 			if (!this.paused) {
 				// Do as many game updates as we need to, potentially playing catchup
-				while (now - lastUpdateTime > TIME_BETWEEN_UPDATES && updateCount < MAX_UPDATES_BEFORE_RENDER) {
+				while (now - lastUpdateTime > Preferences.TIME_BETWEEN_UPDATES && updateCount < Preferences.MAX_UPDATES_BEFORE_RENDER) {
 					this.updateGame();
-					lastUpdateTime += TIME_BETWEEN_UPDATES;
+					lastUpdateTime += Preferences.TIME_BETWEEN_UPDATES;
 					updateCount++;
 				}
 
 				// If for some reason an update takes forever, we don't want to do an insane number of catchups
-				if (now - lastUpdateTime > TIME_BETWEEN_UPDATES)
-					lastUpdateTime = now - TIME_BETWEEN_UPDATES;
+				if (now - lastUpdateTime > Preferences.TIME_BETWEEN_UPDATES) lastUpdateTime = now - Preferences.TIME_BETWEEN_UPDATES;
 
 				// Render. To do so, we need to calculate interpolation for a smooth render
-				float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / TIME_BETWEEN_UPDATES));
+				float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / Preferences.TIME_BETWEEN_UPDATES));
 				this.drawGame(interpolation);
 				lastRenderTime = now;
 
@@ -98,13 +88,13 @@ public class GameLoop extends JPanel {
 				int thisSecond = (int) (lastUpdateTime / 1000000000);
 				if (thisSecond > lastSecondTime) {
 					// System.out.println("NEW SECOND " + thisSecond + " " + this.frameCount);
-					this.fps = this.frameCount;
+					this.actualFps = this.frameCount;
 					this.frameCount = 0;
 					lastSecondTime = thisSecond;
 				}
 
 				// Yield until it has been at least the target time between renders. This saves the CPU from hogging
-				while (now - lastRenderTime < TARGET_TIME_BETWEEN_RENDERS && now - lastUpdateTime < TIME_BETWEEN_UPDATES) {
+				while (now - lastRenderTime < Preferences.TARGET_TIME_BETWEEN_RENDERS && now - lastUpdateTime < Preferences.TIME_BETWEEN_UPDATES) {
 					Thread.yield();
 
 					// This stops the app from consuming all your CPU. It makes this slightly less accurate, but is worth it
@@ -137,8 +127,7 @@ public class GameLoop extends JPanel {
 			}
 
 			// The bird obviously needs to fall down after a jump
-			if (this.ticks % 2 == 0 && this.yMotion < 15)
-				this.yMotion += 2;
+			if (this.ticks % 2 == 0 && this.yMotion < 15) this.yMotion += 2;
 
 			// Remove column after being out of vision (for performance and memory reason; no one needs them anymore)
 			for (int i = 0; i < this.gameObjects.columns.size(); i++) {
@@ -148,8 +137,7 @@ public class GameLoop extends JPanel {
 				if (column.x + column.width < 0) {
 					this.gameObjects.columns.remove(column);
 
-					if (column.y == 0)
-						this.gameObjects.addColumn(false);
+					if (column.y == 0) this.gameObjects.addColumn(false);
 				}
 			}
 
@@ -159,8 +147,7 @@ public class GameLoop extends JPanel {
 			// For each column check
 			for (Rectangle column : this.gameObjects.columns) {
 				// Add to score when passing the column
-				if (column.y == 0 && this.gameObjects.bird.x + this.gameObjects.bird.width / 2 > column.x + column.width / 2 - 5 && this.gameObjects.bird.x + this.gameObjects.bird.width / 2 < column.x + column.width / 2 + 5)
-					this.score++;
+				if (column.y == 0 && this.gameObjects.bird.x + this.gameObjects.bird.width / 2 > column.x + column.width / 2 - 5 && this.gameObjects.bird.x + this.gameObjects.bird.width / 2 < column.x + column.width / 2 + 5) this.score++;
 
 				// Does the bird hit the column
 				if (column.intersects(this.gameObjects.bird)) {
@@ -172,13 +159,11 @@ public class GameLoop extends JPanel {
 						this.gameObjects.bird.x = column.x - this.gameObjects.bird.width;
 					else if (column.y != 0)
 						this.gameObjects.bird.y = column.y - this.gameObjects.bird.height;
-					else if (this.gameObjects.bird.y < column.height)
-						this.gameObjects.bird.y = column.height;
+					else if (this.gameObjects.bird.y < column.height) this.gameObjects.bird.y = column.height;
 				}
 			}
 			// If too high or to low (eg hit ground)
-			if (this.gameObjects.bird.y > Preferences.HEIGHT - 120 - Preferences.birdSize || this.gameObjects.bird.y < 0)
-				this.gameOver = true;
+			if (this.gameObjects.bird.y > Preferences.HEIGHT - 120 - Preferences.birdSize || this.gameObjects.bird.y < 0) this.gameOver = true;
 
 			// Slide on ground and don't go deeper
 			if (this.gameObjects.bird.y + this.yMotion >= Preferences.HEIGHT - 130) {
@@ -195,8 +180,7 @@ public class GameLoop extends JPanel {
 
 	private void drawGame(float interpolation) {
 		this.setInterpolation(interpolation);
-		// System.out.println(interpolation + ";" + this.frameCount);
-		this.jframe.repaint(); // FIXME add interpolation in params
+		this.jframe.repaint();
 	}
 
 	protected void jump() {
@@ -220,8 +204,7 @@ public class GameLoop extends JPanel {
 		if (!this.started)
 			this.started = true;
 		else if (!this.gameOver) {
-			if (this.yMotion > 0)
-				this.yMotion = 0;
+			if (this.yMotion > 0) this.yMotion = 0;
 			this.yMotion -= 10;
 		}
 	}
@@ -259,16 +242,13 @@ public class GameLoop extends JPanel {
 		g.setFont(new Font("Arial", 1, 100));
 
 		// Start screen
-		if (!this.started)
-			g.drawString("Click to start!", 75, Preferences.HEIGHT / 2 - 50);
+		if (!this.started) g.drawString("Click to start!", 75, Preferences.HEIGHT / 2 - 50);
 
 		// Game over
-		if (this.gameOver)
-			g.drawString("Game Over!", 100, Preferences.HEIGHT / 2 - 50);
+		if (this.gameOver) g.drawString("Game Over!", 100, Preferences.HEIGHT / 2 - 50);
 
 		// Score
-		if (!this.gameOver && this.started)
-			g.drawString(String.valueOf(this.score), Preferences.WIDTH / 2 - 25, 100);
+		if (!this.gameOver && this.started) g.drawString(String.valueOf(this.score), Preferences.WIDTH / 2 - 25, 100);
 	}
 
 	@Override
@@ -279,7 +259,7 @@ public class GameLoop extends JPanel {
 		// Render some text to the screen
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("Arial", 1, 10));
-		g.drawString("FPS: " + this.fps, 5, 10);
+		g.drawString("FPS: " + this.actualFps, 5, 10);
 		g.drawString("© 2016 Joshua Sonnet", Preferences.HEIGHT - 21 - 100, Preferences.WIDTH - 35);
 
 		// Count fps
@@ -287,10 +267,13 @@ public class GameLoop extends JPanel {
 	}
 
 	// FIXME add interpolation to render (bird.x & column.x)
-    // FIXME performance issues
+	/*
+	 * int drawX = (int) ((this.ballX - this.lastBallX) * this.interpolation + this.lastBallX - this.ballWidth / 2); int drawY = (int) ((this.ballY - this.lastBallY) * this.interpolation +
+	 * this.lastBallY - this.ballHeight / 2); this.lastDrawX = drawX; this.lastDrawY = drawY;
+	 */
+	// FIXME performance issues
 	// TODO add new class for renderer ?
-	// TODO clean up variables and sort to preferences
-    // TODO menu and configs (soon)
+	// TODO menu and configs (soon)
 
 	// (c) 2016 Joshua Sonnet
 }

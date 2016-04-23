@@ -13,8 +13,8 @@ public class GameObjects {
 
 	protected GameObjects() {
 		// Create bird as rectangle
-		this.bird = new Rectangle(Preferences.WIDTH / 2 - 10, Preferences.HEIGHT / 2 - 10, Preferences.birdSize, Preferences.birdSize);
-		// Save every cloumn in an arrayList
+		this.bird = new Rectangle(Preferences.WIDTH / 2 - 17, Preferences.HEIGHT / 2 - 17, Preferences.birdSize, Preferences.birdSize);
+		// Save every column in an arrayList
 		this.columns = new ArrayList<Rectangle>();
 
 		// Render enough columns (maybe needs to change later!)
@@ -27,11 +27,11 @@ public class GameObjects {
 
 	protected void addColumn(boolean start) {
 		// Space between top and bottom column
-		int space = 300;
+		final int space = Preferences.SPACE_COLUMNS;
 		// Thickness of each column
-		int width = 100;
-		// Random height for the gap
-		int height = 50 + Preferences.rand.nextInt(350);
+		final int width = 100;
+		// Random y position for the gap
+		final int height = 50 + Preferences.rand.nextInt(400);
 
 		if (start) {
 			// If start create initial column
