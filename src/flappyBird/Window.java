@@ -35,10 +35,8 @@ public class Window implements MouseListener, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_SPACE)
-			this.gameLoop.jump();
-		if (e.getKeyCode() == KeyEvent.VK_Q)
-			System.exit(0);
+		if (e.getKeyCode() == KeyEvent.VK_SPACE) this.gameLoop.jump();
+		if (e.getKeyCode() == KeyEvent.VK_Q) System.exit(0);
 	}
 
 	@Override
