@@ -23,6 +23,7 @@ public class GameLoop extends JPanel {
 	private int frameCount = 0;
 	// Delta of gameLoop and fps difference
 	private float interpolation;
+	private int lastDrawX, lastDrawY;
 
 	/* PHYSICS */
 	// Variables of the game and physics
@@ -162,7 +163,7 @@ public class GameLoop extends JPanel {
 					else if (this.gameObjects.bird.y < column.height) this.gameObjects.bird.y = column.height;
 				}
 			}
-			// If too high or to low (eg hit ground)
+			// If too high or to low (aka hit ground)
 			if (this.gameObjects.bird.y > Preferences.HEIGHT - 120 - Preferences.birdSize || this.gameObjects.bird.y < 0) this.gameOver = true;
 
 			// Slide on ground and don't go deeper
@@ -190,6 +191,7 @@ public class GameLoop extends JPanel {
 			this.gameObjects.columns.clear();
 			this.yMotion = 0;
 			this.score = 0;
+			this.lastDrawX = this.lastDrawY = 0;
 
 			// Render columns again (-> new game start)
 			this.gameObjects.addColumn(true);
@@ -224,18 +226,30 @@ public class GameLoop extends JPanel {
 
 		// Handle the bird
 		g.setColor(Color.red);
+
+		// Handle interpolation
+		int drawX = (int) ((this.gameObjects.bird.x - this.lastDrawX) * this.interpolation + this.gameObjects.bird.x);
+		int drawY = (int) ((this.gameObjects.bird.y - this.lastDrawY) * this.interpolation + this.gameObjects.bird.y);
+
+		// if (drawX != this.gameObjects.bird.x && drawX + 1 != this.gameObjects.bird.x) System.out.println("Orgi: " + this.gameObjects.bird.x + " New: " + drawX);
+		// if (drawY != this.gameObjects.bird.y && drawY + 1 != this.gameObjects.bird.y) System.out.println("Orgi: " + this.gameObjects.bird.y + " New: " + drawY);
+
 		try {
 			// Set the bird texture
 			Image img = ImageIO.read(this.getClass().getResource("/flappy.png"));
-			g.drawImage(img, this.gameObjects.bird.x, this.gameObjects.bird.y, this.gameObjects.bird.width, this.gameObjects.bird.height, null);
+			g.drawImage(img, drawX, drawY, this.gameObjects.bird.width, this.gameObjects.bird.height, null);
 		} catch (IOException e) {
 			// If texture couldn't be loaded fall back to making a red rectangle
-			g.fillRect(this.gameObjects.bird.x, this.gameObjects.bird.y, this.gameObjects.bird.width, this.gameObjects.bird.height);
+			g.fillRect(drawX, drawY, this.gameObjects.bird.width, this.gameObjects.bird.height);
 		}
 
+		// Interpolation variable for calculation
+		this.lastDrawX = drawX;
+		this.lastDrawY = drawY;
+
 		// Color each column
-		for (Rectangle column : this.gameObjects.columns)
-			this.gameObjects.paintColumn(g, column);
+		for (int i = 0; i < this.gameObjects.columns.size(); i++)
+			this.gameObjects.paintColumn(g, this.gameObjects.columns.get(i));
 
 		// Font handling
 		g.setColor(Color.white);
@@ -266,13 +280,9 @@ public class GameLoop extends JPanel {
 		this.frameCount++;
 	}
 
-	// FIXME add interpolation to render (bird.x & column.x)
-	/*
-	 * int drawX = (int) ((this.ballX - this.lastBallX) * this.interpolation + this.lastBallX - this.ballWidth / 2); int drawY = (int) ((this.ballY - this.lastBallY) * this.interpolation +
-	 * this.lastBallY - this.ballHeight / 2); this.lastDrawX = drawX; this.lastDrawY = drawY;
-	 */
 	// FIXME performance issues
-	// TODO add new class for renderer ?
+	// TODO ? add new class for renderer
+	// TODO ? interpolation for game movement (aka columns x pos)
 	// TODO menu and configs (soon)
 
 	// (c) 2016 Joshua Sonnet
