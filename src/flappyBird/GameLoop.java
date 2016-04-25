@@ -88,7 +88,7 @@ public class GameLoop extends JPanel {
 				// Update the frames we got
 				int thisSecond = (int) (lastUpdateTime / 1000000000);
 				if (thisSecond > lastSecondTime) {
-					// System.out.println("NEW SECOND " + thisSecond + " " + this.frameCount);
+					// LogHelper.log("NEW SECOND " + thisSecond + " " + this.frameCount);
 					this.actualFps = this.frameCount;
 					this.frameCount = 0;
 					lastSecondTime = thisSecond;
@@ -231,8 +231,8 @@ public class GameLoop extends JPanel {
 		int drawX = (int) ((this.gameObjects.bird.x - this.lastDrawX) * this.interpolation + this.gameObjects.bird.x);
 		int drawY = (int) ((this.gameObjects.bird.y - this.lastDrawY) * this.interpolation + this.gameObjects.bird.y);
 
-		// if (drawX != this.gameObjects.bird.x && drawX + 1 != this.gameObjects.bird.x) System.out.println("Orgi: " + this.gameObjects.bird.x + " New: " + drawX);
-		// if (drawY != this.gameObjects.bird.y && drawY + 1 != this.gameObjects.bird.y) System.out.println("Orgi: " + this.gameObjects.bird.y + " New: " + drawY);
+		// if (drawX != this.gameObjects.bird.x && drawX + 1 != this.gameObjects.bird.x) LogHelper.log("Orgi: " + this.gameObjects.bird.x + " New: " + drawX);
+		// if (drawY != this.gameObjects.bird.y && drawY + 1 != this.gameObjects.bird.y) LogHelper.log("Orgi: " + this.gameObjects.bird.y + " New: " + drawY);
 
 		try {
 			// Set the bird texture
