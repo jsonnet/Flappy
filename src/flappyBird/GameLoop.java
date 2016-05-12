@@ -120,11 +120,17 @@ public class GameLoop extends JPanel {
 		this.ticks++;
 
 		if (this.started) {
-			// Movement of the game (eg Movement of the columns)
+			// Movement of the game (aka Movement of the columns)
 			for (int i = 0; i < this.gameObjects.columns.size(); i++) {
 				Rectangle column = this.gameObjects.columns.get(i);
 
-				column.x -= runningSpeed;
+				int helper = runningSpeed;
+				// Should result in smoother movement of the columns
+				while (helper > 0) {
+					column.x -= 2;
+					helper -= 2;
+					this.jframe.repaint();
+				}
 			}
 
 			// The bird obviously needs to fall down after a jump
@@ -230,9 +236,6 @@ public class GameLoop extends JPanel {
 		// Handle interpolation
 		int drawX = (int) ((this.gameObjects.bird.x - this.lastDrawX) * this.interpolation + this.gameObjects.bird.x);
 		int drawY = (int) ((this.gameObjects.bird.y - this.lastDrawY) * this.interpolation + this.gameObjects.bird.y);
-
-		// if (drawX != this.gameObjects.bird.x && drawX + 1 != this.gameObjects.bird.x) LogHelper.log("Orgi: " + this.gameObjects.bird.x + " New: " + drawX);
-		// if (drawY != this.gameObjects.bird.y && drawY + 1 != this.gameObjects.bird.y) LogHelper.log("Orgi: " + this.gameObjects.bird.y + " New: " + drawY);
 
 		try {
 			// Set the bird texture
